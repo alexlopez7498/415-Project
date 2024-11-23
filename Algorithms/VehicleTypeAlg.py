@@ -1,39 +1,53 @@
+import sys
 import time
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, count
 
-# Initialize Spark session
-spark = SparkSession.builder \
-    .getOrCreate()
+# Validate input arguments
+if len(sys.argv) < 2:
+    print("Error: No file path provided. Please specify a CSV file.")
+    sys.exit(1)
 
-# Measure execution time
-start_time = time.time()
+file_path = sys.argv[1]
 
-# Read the CSV file, inferring schema and headers
-df = spark.read.csv("Motor_Vehicle_Collisions_-_Full.csv", header=True, inferSchema=True)
+try:
+    # Initialize Spark session
+    spark = SparkSession.builder.getOrCreate()
 
-# Group by VEHICLE_TYPE and VEHICLE_MAKE, then count the number of crashes for each combination
-crash_summary = df.groupBy("VEHICLE_TYPE", "VEHICLE_MAKE").agg(
-    count("COLLISION_ID").alias("Crash_Count")
-)
+    # Measure execution time
+    start_time = time.time()
 
-# Sort by Crash_Count in descending order for better insights
-crash_summary = crash_summary.orderBy(col("Crash_Count").desc())
+    # Read the CSV file
+    df = spark.read.csv(file_path, header=True, inferSchema=True)
 
-# Validate results
-total_rows = df.count()
-grouped_count = crash_summary.count()
+    # Group by VEHICLE_TYPE and count occurrences
+    vehicle_type_summary = df.groupBy("VEHICLE_TYPE").agg(
+        count("COLLISION_ID").alias("Crash_Count")
+    )
 
-print(f"Total Rows in Dataset: {total_rows}")
-print(f"Number of Groups (VEHICLE_TYPE & VEHICLE_MAKE): {grouped_count}")
+    # Sort by Crash_Count in descending order
+    vehicle_type_summary = vehicle_type_summary.orderBy(col("Crash_Count").desc())
 
-# Write the output to a CSV file
-crash_summary.write.csv("output/vehicle_crash_summary", header=True)
+    # Collect results as a list
+    results = vehicle_type_summary.collect()
 
-# Measure end time and calculate execution time
-end_time = time.time()
-execution_time = end_time - start_time
-print(f"Execution Time: {execution_time:.2f} seconds")
+    # Format results for output
+    result_str = "\n".join(
+        [f"Type: {row['VEHICLE_TYPE']}, Crashes: {row['Crash_Count']}" for row in results]
+    )
 
-# Stop the Spark session
-spark.stop()
+    # Print results for GUI capture
+    print("Vehicle Type Analysis Results:")
+    print(result_str)
+
+    # Measure and print execution time
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"\nExecution Time: {execution_time:.2f} seconds")
+
+except Exception as e:
+    print(f"Error: {e}")
+    sys.exit(1)
+
+finally:
+    spark.stop()

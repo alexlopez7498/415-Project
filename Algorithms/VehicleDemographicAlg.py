@@ -1,6 +1,7 @@
 import time
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, count
+import sys
 
 # Initialize Spark session
 spark = SparkSession.builder.getOrCreate()
@@ -19,20 +20,32 @@ demographic_crash_counts = df.groupBy("DRIVER_SEX", "DRIVER_LICENSE_STATUS", "DR
 # Sort results by crash count in descending order for easy analysis
 demographic_crash_counts = demographic_crash_counts.orderBy(col("Crash_Count").desc())
 
+# Collect the results as a list of rows
+results = demographic_crash_counts.collect()
+
+# Format results as a readable string
+result_str = "\n".join(
+    [f"{row['DRIVER_SEX']},{row['DRIVER_LICENSE_STATUS']}, "
+     f"{row['DRIVER_LICENSE_JURISDICTION']}, {row['Crash_Count']}" 
+     for row in results]
+)
+
+# Print detailed results for the GUI to capture
+print("Detailed Results:Driver Sex, License Status, License Jurisdiction, Crashes")
+print(result_str)
+
 # Validate results
 total_rows = df.count()
 grouped_count = demographic_crash_counts.count()
 
-print(f"Total Rows in Dataset: {total_rows}")
+# Print additional information
+print(f"\nTotal Rows in Dataset: {total_rows}")
 print(f"Number of Groups (Driver Demographics): {grouped_count}")
-
-# Save the result to a CSV file
-demographic_crash_counts.write.csv("output/driver_demographics_crash_counts", header=True)
 
 # Measure end time and calculate execution time
 end_time = time.time()
 execution_time = end_time - start_time
-print(f"Execution Time: {execution_time:.2f} seconds")
+print(f"\nExecution Time: {execution_time:.2f} seconds")
 
 # Stop the Spark session
 spark.stop()
