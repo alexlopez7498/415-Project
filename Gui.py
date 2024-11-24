@@ -11,25 +11,25 @@ def run_analysis():
 
     try:
         if selected_algorithm == "Hourly Crash Counts":
-            run_external_script("HourlyCrashRate.py", "Hourly Crash Counts")
+            run_external_script("Algorithms/HourlyCrashRate.py", "Hourly Crash Counts")
 
         elif selected_algorithm == "Crash By Borough":
-            run_external_script("CrashByBorough.py", "Crash By Borough")
+            run_external_script("Algorithms/CrashByBorough.py", "Crash By Borough")
 
         elif selected_algorithm == "Crash By Zipcode":
-            run_external_script("CrashByZipcode.py", "Crash By Zipcode")
+            run_external_script("Algorithms/CrashByZipcode.py", "Crash By Zipcode")
 
         elif selected_algorithm == "Crash By Day":
-            run_external_script("CrashesByDay.py", "Crash By Day")
+            run_external_script("Algorithms/CrashesByDay.py", "Crash By Day")
 
         elif selected_algorithm == "Vehicle Year Analysis":
-            run_external_script("VehicleYearAlg.py", "Vehicle Year Analysis")
+            run_external_script("Algorithms/VehicleYearAlg.py", "Vehicle Year Analysis")
 
         elif selected_algorithm == "Vehicle Type Analysis":
-            run_external_script("VehicleTypeAlg.py", "Vehicle Type Analysis")
+            run_external_script("Algorithms/VehicleTypeAlg.py", "Vehicle Type Analysis")
 
         elif selected_algorithm == "Driver Demographic Analysis":
-            run_external_script("VehicleDemographicAlg.py", "Driver Demographic Analysis")
+            run_external_script("Algorithms/ehicleDemographicAlg.py", "Driver Demographic Analysis")
 
         else:
             messagebox.showerror("Error", "Invalid algorithm selected")
