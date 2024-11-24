@@ -2,6 +2,7 @@ import sys
 import time
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, count
+import matplotlib.pyplot as plt
 
 # Validate input arguments
 if len(sys.argv) < 2:
@@ -33,15 +34,38 @@ try:
 
     # Collect the results as a list of rows
     results = yearly_crash_summary.collect()
-
+    # Prepare data for plotting
+    years = [row['VEHICLE_YEAR'] for row in results]
+    crash_counts = [row['Crash_Count'] for row in results]
     # Format results as a readable string
     result_str = "\n".join(
         [f"Year: {row['VEHICLE_YEAR']}, Crashes: {row['Crash_Count']}" for row in results]
     )
 
+    # Enable interactive mode for the plot
+    plt.ion()
+
+    # Create the bar plot
+    plt.bar(years, crash_counts, color='blue')
+    plt.xlabel('Vehicle Year')
+    plt.ylabel('Crash Count')
+    plt.title('Crash Count by Vehicle Year')
+    plt.xticks(rotation=45)
+    plt.xlim(1900, 2025)
+    plt.ylim(0, 150000)
+    plt.tight_layout()
+
+    # Show the plot and allow interaction
+    plt.show(block=False)
+
     # Print detailed results for the GUI to capture
     print("Detailed Results:")
     print(result_str)
+
+    # Keep the plot window open
+    plt.show(block=True)
+
+
 
     # Measure end time and calculate execution time
     end_time = time.time()
