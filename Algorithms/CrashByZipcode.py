@@ -25,7 +25,7 @@ bar_width = 0.8  # Adjust this value as needed (default is 0.8)
 plt.bar(Zipcodes[:100], crash_counts[:100], color='blue', width=bar_width)
 plt.xlabel('ZIP CODE')
 plt.ylabel('Crash Count')
-plt.title('Crash Count by Vehicle Year')
+plt.title('Crash Count by ZipCode')
 plt.xticks(ticks=range(len(Zipcodes[:100])), labels=Zipcodes[:100], rotation=90, ha='right')
 
 

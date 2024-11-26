@@ -24,7 +24,7 @@ bar_width = 0.8  # Adjust this value as needed (default is 0.8)
 plt.bar(Boroughs, crash_counts, color='blue', width=bar_width)
 plt.xlabel('BOROUGH')
 plt.ylabel('Crash Count')
-plt.title('Crash Count by Vehicle Year')
+plt.title('Crash Count by BOROUGH')
 plt.xticks(ticks=range(len(Boroughs)), labels=Boroughs, rotation=90, ha='right')
 
 

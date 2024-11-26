@@ -48,7 +48,7 @@ try:
     plt.bar(Types, crash_counts, color='blue', width=bar_width)
     plt.xlabel('Vehicle Type')
     plt.ylabel('Crash Count')
-    plt.title('Crash Count by Vehicle Year')
+    plt.title('Crash Count by Vehicle Type')
     plt.xticks(ticks=range(len(Types)), labels=Types, rotation=90, ha='right')
 
 
