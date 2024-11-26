@@ -77,7 +77,6 @@ algorithm_var = tk.StringVar(value="")
 algorithm_menu = tk.OptionMenu(
     frame, algorithm_var, 
     "Hourly Crash Counts", 
-    "Top Contributing Factors", 
     "Vehicle Year Analysis", 
     "Vehicle Type Analysis", 
     "Driver Demographic Analysis",
