@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession, functions as F
-
+import matplotlib.pyplot as plt
 # Create Spark session
 spark = SparkSession.builder.appName("CrashAnalysis").getOrCreate()
 
@@ -15,10 +15,29 @@ hourly_crashes = df.groupBy("HOUR").agg(F.count("*").alias("CRASH_COUNT"))
 
 # Sort by HOUR for better readability
 hourly_crashes = hourly_crashes.orderBy("HOUR")
+results = hourly_crashes.collect()
 
-# Write the result to a CSV file
-output_path = "hourly_crash_counts.csv"
-hourly_crashes.write.mode("overwrite").option("header", "true").csv(output_path)
+Hours = [row['HOUR'] for row in results]
+crash_counts = [row['CRASH_COUNT'] for row in results]
 
+plt.ion()
+plt.figure(figsize=(16, 10))  # Increase the width and height
+
+    # Create the bar plot
+bar_width = 0.8  # Adjust this value as needed (default is 0.8)
+plt.bar(Hours, crash_counts, color='blue', width=bar_width)
+plt.xlabel('HOUR')
+plt.ylabel('Crash Count')
+plt.title('Crash Count by Vehicle Year')
+plt.xticks(ticks=range(len(Hours)), labels=Hours, rotation=90, ha='right')
+
+
+plt.ylim(0, 120000)
+plt.tight_layout()
+    # Show the plot and allow interaction
+plt.show(block=False)
+
+    # Keep the plot window open
+plt.show(block=True)
 # Show the result for verification
 hourly_crashes.show(24, truncate=False)
