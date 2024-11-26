@@ -2,7 +2,7 @@ import time
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, count
 import sys
-
+import matplotlib.pyplot as plt
 # Initialize Spark session
 spark = SparkSession.builder.getOrCreate()
 
@@ -30,10 +30,32 @@ result_str = "\n".join(
      for row in results]
 )
 
+    # Enable interactive mode for the plot
+plt.ion()
+    # Create the bar plot
+bar_width = 0.8  # Adjust this value as needed (default is 0.8)
+# Prepare labels for the x-axis by combining demographic columns
+labels = [
+    f"{row['DRIVER_SEX']}, {row['DRIVER_LICENSE_STATUS']}, {row['DRIVER_LICENSE_JURISDICTION']}"
+    for row in results
+]
+crash_counts = [row['Crash_Count'] for row in results]
+
+# Plot the data
+plt.figure(figsize=(16, 10))  # Adjust figure size for readability
+bar_width = 0.8  # Adjust bar width
+plt.bar(labels[:50], crash_counts[:50], color='blue', width=bar_width)  # Top 50 groups
+
+plt.xlabel('Driver Demographics (Sex, License Status, Jurisdiction)')
+plt.ylabel('Crash Count')
+plt.title('Crash Count by Driver Demographics')
+plt.xticks(ticks=range(len(labels[:50])), labels=labels[:50], rotation=90, ha='right')  # Rotate labels for clarity
+plt.tight_layout()
+plt.show(block=False)
 # Print detailed results for the GUI to capture
 print("Detailed Results:Driver Sex, License Status, License Jurisdiction, Crashes")
 print(result_str)
-
+plt.show(block=True)
 # Validate results
 total_rows = df.count()
 grouped_count = demographic_crash_counts.count()

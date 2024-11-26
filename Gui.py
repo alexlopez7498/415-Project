@@ -29,7 +29,7 @@ def run_analysis():
             run_external_script("Algorithms/VehicleTypeAlg.py", "Vehicle Type Analysis")
 
         elif selected_algorithm == "Driver Demographic Analysis":
-            run_external_script("Algorithms/ehicleDemographicAlg.py", "Driver Demographic Analysis")
+            run_external_script("Algorithms/VehicleDemographicAlg.py", "Driver Demographic Analysis")
 
         else:
             messagebox.showerror("Error", "Invalid algorithm selected")
