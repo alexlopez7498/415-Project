@@ -42,7 +42,11 @@ def run_analysis():
 
 def run_external_script(script_name, analysis_name):
     # File path is always "Motor_Vehicle_Collisions_-_Full.csv"
-    file_path = "Motor_Vehicle_Collisions_-_Full.csv"
+    # Get the directory of the current script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # Construct the path to the CSV file (one level up)
+    file_path = os.path.join(script_dir, "../Motor_Vehicle_Collisions_-_Full.csv")
+    #file_path = "Motor_Vehicle_Collisions_-_Full.csv"
     pie_chart_path = "daily_crash_pie_chart.png"
 
     try:

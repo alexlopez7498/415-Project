@@ -3,9 +3,15 @@ from pyspark.sql import SparkSession, functions as F
 # Create Spark session
 spark = SparkSession.builder.appName("CrashAnalysis").getOrCreate()
 
-# Load CSV file into DataFrame
-file_path = "Motor_Vehicle_Collisions_-_Full.csv"
+# Load CSV file into DataFrame from the parent directory
+file_path = "../Motor_Vehicle_Collisions_-_Full.csv"
 df = spark.read.option("header", "true").csv(file_path)
+
+# Print schema to debug column names
+df.printSchema()
+
+# Trim spaces or fix column name if necessary
+df = df.withColumnRenamed("CRASH TIME ", "CRASH TIME")  # Example for renaming if needed
 
 # Ensure CRASH TIME is in the correct format and extract the hour
 df = df.withColumn("HOUR", F.hour(F.to_timestamp(F.col("CRASH TIME"), "H:mm")))
