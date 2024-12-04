@@ -10,7 +10,7 @@ spark = SparkSession.builder.getOrCreate()
 start_time = time.time()
 
 # Load CSV file
-df = spark.read.csv("Motor_Vehicle_Collisions_-_Full.csv", header=True, inferSchema=True)
+df = spark.read.csv("../Motor_Vehicle_Collisions_-_Full.csv", header=True, inferSchema=True)
 
 # Group by DRIVER_SEX, DRIVER_LICENSE_STATUS, and DRIVER_LICENSE_JURISDICTION
 # and calculate the sum of crashes for each demographic group
