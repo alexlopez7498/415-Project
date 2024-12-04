@@ -34,6 +34,42 @@ day_order = F.when(F.col("DAY_OF_WEEK") == "Sunday", 1) \
 daily_crashes = daily_crashes.withColumn("DAY_ORDER", day_order).orderBy("DAY_ORDER")
 results = daily_crashes.collect()
 
+# Collect results into a Pandas DataFrame
+daily_crashes_pd = daily_crashes.toPandas()
+
+
+# Function to generate a pie chart and save it as an image
+def generate_pie_chart(data):
+    labels = data["DAY_OF_WEEK"]
+    sizes = data["CRASH_COUNT"]
+    total = sum(sizes)
+    percentages = [count / total * 100 for count in sizes]
+
+    # Create the figure and make the pie chart larger
+    fig, ax = plt.subplots(figsize=(8, 8))
+    wedges, texts, autotexts = ax.pie(
+        percentages,
+        labels=labels,
+        autopct=lambda p: f'{p:.1f}%',
+        startangle=90,
+        textprops={'color': "black"}
+    )
+    ax.set_title("Crashes by Day of Week", fontsize=16)
+
+    # Adjust percentage text size
+    plt.setp(autotexts, size=12, weight="bold")
+    plt.setp(texts, size=10)
+
+    # Save the plot as an image
+    plt.savefig("daily_crash_pie_chart.png")  # Save to the current working directory
+
+    # Close the figure to prevent it from popping up
+    plt.close(fig)
+
+# Generate the pie chart
+generate_pie_chart(daily_crashes_pd)
+
+
 # Prepare data for plotting
 days = [row["DAY_OF_WEEK"] for row in results]
 crash_counts = [row["CRASH_COUNT"] for row in results]

@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox, filedialog
 import subprocess
+from PIL import Image, ImageTk
+import os
 
 # Function to run the selected analysis
 def run_analysis():
@@ -10,6 +12,9 @@ def run_analysis():
         return
 
     try:
+        # Clear any existing images
+        clear_displayed_images()
+
         if selected_algorithm == "Hourly Crash Counts":
             run_external_script("Algorithms/HourlyCrashRate.py", "Hourly Crash Counts")
 
@@ -31,6 +36,10 @@ def run_analysis():
         elif selected_algorithm == "Driver Demographic Analysis":
             run_external_script("Algorithms/VehicleDemographicAlg.py", "Driver Demographic Analysis")
 
+        elif selected_algorithm == "Confusion Matrix":
+            run_external_script("Algorithms/Matrix.py", "Confusion Matrix")
+
+
         else:
             messagebox.showerror("Error", "Invalid algorithm selected")
             return
@@ -38,9 +47,39 @@ def run_analysis():
         messagebox.showerror("Error", f"An error occurred: {e}")
 
 
+def clear_displayed_images():
+    """Clears any displayed images in the Tkinter window."""
+    global root
+    # Check if there are any pie chart or confusion matrix images displayed and remove them
+    if hasattr(run_external_script, "pie_chart_image"):
+        del run_external_script.pie_chart_image
+
+    if hasattr(run_external_script, "pie_chart_image_label"):
+        run_external_script.pie_chart_image_label.destroy()
+        del run_external_script.pie_chart_image_label
+
+    if hasattr(run_external_script, "confusion_matrix_image"):
+        del run_external_script.confusion_matrix_image
+
+    if hasattr(run_external_script, "confusion_matrix_image_label"):
+        run_external_script.confusion_matrix_image_label.destroy()
+        del run_external_script.confusion_matrix_image_label
+
+
 def run_external_script(script_name, analysis_name):
+    import os
+    import subprocess
+    import tkinter as tk
+    from tkinter import messagebox
+    from PIL import Image, ImageTk
+
     # File path is always "Motor_Vehicle_Collisions_-_Full.csv"
-    file_path = "Motor_Vehicle_Collisions_-_Full.csv"
+    # Get the directory of the current script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # Construct the path to the CSV file (one level up)
+    file_path = os.path.join(script_dir, "../Motor_Vehicle_Collisions_-_Full.csv")
+    pie_chart_path = "daily_crash_pie_chart.png"
+    confusion_matrix_path = "confusion_matrix.png"
 
     try:
         # Call the external script
@@ -56,10 +95,48 @@ def run_external_script(script_name, analysis_name):
 
         if result.returncode == 0:
             messagebox.showinfo("Success", f"{analysis_name} completed successfully!")
+
+            # Display the appropriate image based on the analysis
+            if analysis_name == "Crash By Day":
+                if os.path.exists(pie_chart_path):
+                    display_image(pie_chart_path, "pie_chart_image")
+                else:
+                    messagebox.showerror("Error", "Pie chart file not found!")
+
+            elif analysis_name == "Confusion Matrix":
+                if os.path.exists(confusion_matrix_path):
+                    display_image(confusion_matrix_path, "confusion_matrix_image")
+                else:
+                    messagebox.showerror("Error", "Confusion matrix file not found!")
+
         else:
             messagebox.showerror("Error", f"{analysis_name} failed:\n{result.stderr}")
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred while running {analysis_name}: {e}")
+
+
+def display_image(image_path, image_attr_name):
+    """Helper function to display an image in the Tkinter root window."""
+    global root  # Ensure `root` is accessible
+    img = Image.open(image_path)
+    img = img.resize((400, 400), Image.Resampling.LANCZOS)
+    photo = ImageTk.PhotoImage(img)
+
+    # Keep a reference to the image
+    setattr(root, image_attr_name, photo)
+
+    # Create or update the Label widget with the image
+    if hasattr(run_external_script, f"{image_attr_name}_label"):
+        label = getattr(run_external_script, f"{image_attr_name}_label")
+        label.config(image=photo)
+        label.image = photo
+    else:
+        label = tk.Label(root, image=photo)
+        setattr(run_external_script, f"{image_attr_name}_label", label)
+        label.pack()
+
+
+
 
 # Create main window
 root = tk.Tk()
@@ -82,7 +159,8 @@ algorithm_menu = tk.OptionMenu(
     "Driver Demographic Analysis",
     "Crash By Borough",
     "Crash By Zipcode",
-    "Crash By Day"
+    "Crash By Day",
+    "Confusion Matrix"
 )
 
 algorithm_menu.grid(row=0, column=1, padx=5, pady=5)
