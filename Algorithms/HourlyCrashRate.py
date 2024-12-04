@@ -1,5 +1,6 @@
 from pyspark.sql import SparkSession, functions as F
 import matplotlib.pyplot as plt
+
 # Create Spark session
 spark = SparkSession.builder.appName("CrashAnalysis").getOrCreate()
 
@@ -17,27 +18,30 @@ hourly_crashes = df.groupBy("HOUR").agg(F.count("*").alias("CRASH_COUNT"))
 hourly_crashes = hourly_crashes.orderBy("HOUR")
 results = hourly_crashes.collect()
 
+# Prepare data for plotting
 Hours = [row['HOUR'] for row in results]
 crash_counts = [row['CRASH_COUNT'] for row in results]
 
-plt.ion()
+# Create the bar plot
 plt.figure(figsize=(16, 10))  # Increase the width and height
-
-    # Create the bar plot
 bar_width = 0.8  # Adjust this value as needed (default is 0.8)
 plt.bar(Hours, crash_counts, color='blue', width=bar_width)
-plt.xlabel('HOUR')
+plt.xlabel('Hour of the Day')
 plt.ylabel('Crash Count')
 plt.title('Crash Count by Hourly Rate')
-plt.xticks(ticks=range(len(Hours)), labels=Hours, rotation=90, ha='right')
+plt.xticks(ticks=range(len(Hours)), labels=Hours, rotation=90)
 
-
-plt.ylim(0, 120000)
+# Set the y-axis limit
+plt.ylim(0, max(crash_counts) + 10000)
 plt.tight_layout()
-    # Show the plot and allow interaction
-plt.show(block=False)
 
-    # Keep the plot window open
-plt.show(block=True)
-# Show the result for verification
+# Save the plot as a PNG file
+plt.savefig("hourly_crash_count.png")
+
+#plt.show()
+
+# Print DataFrame results in console (optional, for debugging)
 hourly_crashes.show(24, truncate=False)
+
+# Stop the Spark session to free resources
+spark.stop()

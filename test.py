@@ -1,26 +1,15 @@
-import sys
 import pandas as pd
-from pyspark.sql import SparkSession
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.decomposition import TruncatedSVD
-from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA, TruncatedSVD
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+from sklearn.feature_extraction.text import CountVectorizer
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# # Validate input arguments
-# if len(sys.argv) < 2:
-#     print("Error: No file path provided. Please specify a CSV file.")
-#     sys.exit(1)
-#
-# # Initialize Spark session
-# spark = SparkSession.builder.getOrCreate()
-#
-# file_path = sys.argv[1]
-# df = spark.read.csv(file_path, header=True, inferSchema=True)
+## GENERAL SETUP
 # Load data
-df = pd.read_csv("../Motor_Vehicle_Collisions_-_Full.csv")
+df = pd.read_csv("Motor_Vehicle_Collisions_-_Full.csv")
 
 # Filter to keep only rows where 'PERSON_INJURY' is not null
 df = df[df['PERSON_INJURY'].notna()]
@@ -67,13 +56,7 @@ svd = TruncatedSVD(n_components=23, random_state=42)  # n_components=23 provides
 principal_components = svd.fit_transform(vec)
 
 # Split into train and test sets
-X_train, X_test, y_train, y_test = train_test_split(
-    principal_components,
-    t_df['PERSON_INJURY'],
-    test_size=0.20,
-    stratify=t_df['PERSON_INJURY'],  # Ensure balanced stratified split
-    random_state=42
-)
+X_train, X_test, y_train, y_test = train_test_split(principal_components, t_df['PERSON_INJURY'], test_size=0.20, random_state=42)
 
 # Train logistic regression model
 log_reg = LogisticRegression(max_iter=1000)
@@ -83,20 +66,9 @@ log_reg.fit(X_train, y_train)
 y_pred = log_reg.predict(X_test)
 
 # Evaluate the model
-accuracy = accuracy_score(y_test, y_pred)
-print(f"Accuracy: {accuracy:.4f}")
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print(classification_report(y_test, y_pred))
 
-# Convert classification report to a compact table
-report = classification_report(y_test, y_pred, output_dict=True)
-report_df = pd.DataFrame(report).transpose()
-
-# Select relevant metrics and format
-compact_report_df = report_df[['precision', 'recall', 'f1-score', 'support']].round(2)
-compact_report_df.reset_index(inplace=True)
-compact_report_df.rename(columns={'index': 'Class'}, inplace=True)
-
-# Print compact report
-print(compact_report_df.to_string(index=False))
 
 # Generate the confusion matrix
 conf_matrix = confusion_matrix(y_test, y_pred)
@@ -108,7 +80,4 @@ sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=["Not Ki
 plt.xlabel("Predicted Label")
 plt.ylabel("True Label")
 plt.title("Confusion Matrix")
-plt.savefig("confusion_matrix.png")  # Save the figure
-#plt.show()
-plt.close()  # Close the figure to free resources
-
+plt.show()

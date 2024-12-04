@@ -1,10 +1,10 @@
 import time
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, count
-import sys
 import matplotlib.pyplot as plt
+
 # Initialize Spark session
-spark = SparkSession.builder.getOrCreate()
+spark = SparkSession.builder.appName("CrashAnalysis").getOrCreate()
 
 # Measure execution time
 start_time = time.time()
@@ -26,36 +26,32 @@ results = demographic_crash_counts.collect()
 # Format results as a readable string
 result_str = "\n".join(
     [f"{row['DRIVER_SEX']},{row['DRIVER_LICENSE_STATUS']}, "
-     f"{row['DRIVER_LICENSE_JURISDICTION']}, {row['Crash_Count']}" 
+     f"{row['DRIVER_LICENSE_JURISDICTION']}, {row['Crash_Count']}"
      for row in results]
 )
 
-    # Enable interactive mode for the plot
-plt.ion()
-    # Create the bar plot
-bar_width = 0.8  # Adjust this value as needed (default is 0.8)
-# Prepare labels for the x-axis by combining demographic columns
+# Create the bar plot
 labels = [
     f"{row['DRIVER_SEX']}, {row['DRIVER_LICENSE_STATUS']}, {row['DRIVER_LICENSE_JURISDICTION']}"
     for row in results
 ]
 crash_counts = [row['Crash_Count'] for row in results]
 
-# Plot the data
-plt.figure(figsize=(16, 10))  # Adjust figure size for readability
-bar_width = 0.8  # Adjust bar width
-plt.bar(labels[:50], crash_counts[:50], color='blue', width=bar_width)  # Top 50 groups
-
+plt.figure(figsize=(20, 12))  # Adjust figure size for readability
+plt.bar(labels[:50], crash_counts[:50], color='blue', width=0.8)  # Display only top 50 for clarity
 plt.xlabel('Driver Demographics (Sex, License Status, Jurisdiction)')
 plt.ylabel('Crash Count')
 plt.title('Crash Count by Driver Demographics')
-plt.xticks(ticks=range(len(labels[:50])), labels=labels[:50], rotation=90, ha='right')  # Rotate labels for clarity
+plt.xticks(ticks=range(len(labels[:50])), labels=labels[:50], rotation=90, ha='right')
 plt.tight_layout()
-plt.show(block=False)
+
+# Save the plot as a PNG file
+plt.savefig("demographic_crash_count.png")
+
 # Print detailed results for the GUI to capture
-print("Detailed Results:Driver Sex, License Status, License Jurisdiction, Crashes")
+print("Detailed Results: Driver Sex, License Status, License Jurisdiction, Crashes")
 print(result_str)
-plt.show(block=True)
+
 # Validate results
 total_rows = df.count()
 grouped_count = demographic_crash_counts.count()

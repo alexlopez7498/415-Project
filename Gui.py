@@ -50,21 +50,26 @@ def run_analysis():
 def clear_displayed_images():
     """Clears any displayed images in the Tkinter window."""
     global root
-    # Check if there are any pie chart or confusion matrix images displayed and remove them
-    if hasattr(run_external_script, "pie_chart_image"):
-        del run_external_script.pie_chart_image
+    # Define the attribute names for the images exactly as they are used in `run_external_script`
+    image_attributes = [
+        "pie_chart_image", "confusion_matrix_image", "vehicle_type_chart_image",
+        "borough_chart_image", "zipcode_chart_image", "vehicle_year_chart_image",
+        "demographic_chart_image", "hourly_crash_chart_image"
+    ]
 
-    if hasattr(run_external_script, "pie_chart_image_label"):
-        run_external_script.pie_chart_image_label.destroy()
-        del run_external_script.pie_chart_image_label
+    # Iterate through all image attributes and clear them if they exist
+    for attr in image_attributes:
+        image_label_attr = f"{attr}_label"  # The label attribute name
 
-    if hasattr(run_external_script, "confusion_matrix_image"):
-        del run_external_script.confusion_matrix_image
+        # Clear the image
+        if hasattr(run_external_script, attr):
+            delattr(run_external_script, attr)
 
-    if hasattr(run_external_script, "confusion_matrix_image_label"):
-        run_external_script.confusion_matrix_image_label.destroy()
-        del run_external_script.confusion_matrix_image_label
-
+        # Clear the image label and destroy the widget
+        if hasattr(run_external_script, image_label_attr):
+            label = getattr(run_external_script, image_label_attr)
+            label.destroy()
+            delattr(run_external_script, image_label_attr)
 
 def run_external_script(script_name, analysis_name):
     import os
@@ -80,6 +85,13 @@ def run_external_script(script_name, analysis_name):
     file_path = os.path.join(script_dir, "../Motor_Vehicle_Collisions_-_Full.csv")
     pie_chart_path = "daily_crash_pie_chart.png"
     confusion_matrix_path = "confusion_matrix.png"
+    vehicle_type_chart_path = "vehicle_type_bar_chart.png"
+    borough_chart_path = "borough_crash_count.png"
+    #zipcode_char_path = "zipcode_crash_count.png"
+    vehicle_year_chart_path = "vehicle_year_bar_chart.png"
+    demographic_path = "demographic_crash_count.png"
+    hourly_crash_chart = "hourly_crash_count.png"
+
 
     try:
         # Call the external script
@@ -109,6 +121,45 @@ def run_external_script(script_name, analysis_name):
                 else:
                     messagebox.showerror("Error", "Confusion matrix file not found!")
 
+            elif analysis_name == "Vehicle Type Analysis":
+                if os.path.exists(vehicle_type_chart_path):
+                    display_image(vehicle_type_chart_path, "vehicle_type_chart_image")
+                else:
+                    messagebox.showerror("Error", "Vehicle crash count bar chart not found!")
+
+            elif analysis_name == "Crash By Borough":
+                if os.path.exists(borough_chart_path):
+                    display_image(borough_chart_path, "borough_chart_image")
+                else:
+                    messagebox.showerror("Error", "Crash by borough bar chart not found!")
+
+            elif analysis_name == "Crash By Zipcode":
+                zipcode_chart_path = "zipcode_crash_count.png"  # Ensure this path is correct
+                if os.path.exists(zipcode_chart_path):
+                    display_image(zipcode_chart_path, "zipcode_chart_image")
+                else:
+                    messagebox.showerror("Error", "Zipcode crash count bar chart not found!")
+
+
+            elif analysis_name == "Vehicle Year Analysis":
+                if os.path.exists(vehicle_year_chart_path):
+                    display_image(vehicle_year_chart_path, "vehicle_year_chart_image")
+                else:
+                    messagebox.showerror("Error", "Vehicle year crash count bar chart not found!")
+
+            elif analysis_name == "Driver Demographic Analysis":
+                if os.path.exists(demographic_path):
+                    display_image(demographic_path, "demographic_chart_image")
+                else:
+                    messagebox.showerror("Error", "Demographic crash count bar chart not found!")
+
+            elif analysis_name == "Hourly Crash Counts":
+                if os.path.exists(hourly_crash_chart):
+                    display_image(hourly_crash_chart, "hourly_crash_chart_image")
+                else:
+                    messagebox.showerror("Error", "Hourly crash count bar chart not found!")
+
+
         else:
             messagebox.showerror("Error", f"{analysis_name} failed:\n{result.stderr}")
     except Exception as e:
@@ -122,17 +173,18 @@ def display_image(image_path, image_attr_name):
     img = img.resize((400, 400), Image.Resampling.LANCZOS)
     photo = ImageTk.PhotoImage(img)
 
-    # Keep a reference to the image
-    setattr(root, image_attr_name, photo)
+    # Keep a reference to the image to prevent garbage collection
+    setattr(run_external_script, image_attr_name, photo)  # Save it on the run_external_script function for consistency
 
     # Create or update the Label widget with the image
-    if hasattr(run_external_script, f"{image_attr_name}_label"):
-        label = getattr(run_external_script, f"{image_attr_name}_label")
+    label_attr_name = f"{image_attr_name}_label"
+    if hasattr(run_external_script, label_attr_name):
+        label = getattr(run_external_script, label_attr_name)
         label.config(image=photo)
-        label.image = photo
+        label.image = photo  # Keep a reference in the label to prevent garbage collection
     else:
         label = tk.Label(root, image=photo)
-        setattr(run_external_script, f"{image_attr_name}_label", label)
+        setattr(run_external_script, label_attr_name, label)
         label.pack()
 
 

@@ -39,29 +39,24 @@ try:
         [f"Type: {row['VEHICLE_TYPE']}, Crashes: {row['Crash_Count']}" for row in results]
     )
 
-    # Enable interactive mode for the plot
-    plt.ion()
-    plt.figure(figsize=(8, 5))  # Increase the width and height
-
     # Create the bar plot
-    bar_width = 0.8  # Adjust this value as needed (default is 0.8)
-    plt.bar(Types, crash_counts, color='blue', width=bar_width)
+    plt.figure(figsize=(10, 6))  # Increase the width and height
+    plt.bar(Types, crash_counts, color='blue', width=0.8)
     plt.xlabel('Vehicle Type')
     plt.ylabel('Crash Count')
     plt.title('Crash Count by Vehicle Type')
-    plt.xticks(ticks=range(len(Types)), labels=Types, rotation=90, ha='right')
-
-
-    plt.ylim(0, 600000)
+    plt.xticks(rotation=90, ha='right')
     plt.tight_layout()
-    # Show the plot and allow interaction
-    plt.show(block=False)
+
+    # Save the plot as an image
+    plt.savefig("vehicle_type_bar_chart.png")  # Save to the current working directory
+    #plt.show()
+    plt.close()  # Close the figure to prevent it from popping up
+
     # Print results for GUI capture
     print("Vehicle Type Analysis Results:")
     print(result_str)
 
-    # Keep the plot window open
-    plt.show(block=True)
     # Measure and print execution time
     end_time = time.time()
     execution_time = end_time - start_time

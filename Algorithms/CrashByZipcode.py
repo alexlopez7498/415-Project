@@ -30,11 +30,7 @@ Zipcodes = [row['ZIP CODE'] for row in results]
 crash_counts = [row['CRASH_COUNT'] for row in results]
 
 # Plot the data
-plt.ion()
 plt.figure(figsize=(16, 10))  # Increase the width and height
-
-# Determine the maximum crash count for the y-axis limit
-max_crash_count = max(crash_counts)
 
 # Create the bar plot
 bar_width = 0.8  # Adjust this value as needed (default is 0.8)
@@ -44,13 +40,20 @@ plt.ylabel('Crash Count')
 plt.title('Crash Count by ZipCode')
 plt.xticks(ticks=range(len(Zipcodes[:100])), labels=Zipcodes[:100], rotation=90, ha='right')
 
+# Determine the maximum crash count for setting the y-axis limit
+max_crash_count = max(crash_counts)
 plt.ylim(0, max_crash_count + 1000)
 plt.tight_layout()
-# Show the plot and allow interaction
-plt.show(block=False)
 
-# Keep the plot window open
-plt.show(block=True)
+# Save the plot as a PNG file
+plt.savefig("zipcode_crash_count.png")
 
-# Show the result for verification
+#plt.show()
+
+plt.close()
+
+# Display DataFrame results in console
 zipcode_crashes.show(truncate=False)
+
+# Stop the Spark session to free resources
+spark
