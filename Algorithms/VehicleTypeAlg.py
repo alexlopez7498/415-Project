@@ -1,70 +1,46 @@
-import sys
-import time
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, count
+
+mongo_jar_path = "C:/Users/a/Downloads/mongo-spark-connector_2.12-3.0.1.jar"
+
+# Initialize a Spark session
+spark = SparkSession.builder \
+    .appName("MongoDB CarCrash Analysis") \
+    .config("spark.mongodb.input.uri", "mongodb://localhost:27017/CarCrash.Crashes2") \
+    .config("spark.mongodb.output.uri", "mongodb://localhost:27017/CarCrash.Crashes2") \
+    .config('spark.jars.packages', 'org.mongodb.spark:mongo-spark-connector_2.12:2.4.2') \
+    .getOrCreate()
+
+# Read data from MongoDB into a Spark DataFrame
+df = spark.read.format("mongo").load()
+
+# Group by 'VEHICLE_TYPE' and count the number of crashes
+yearly_crashes = df.groupBy("VEHICLE_TYPE").agg(count("*").alias("CRASH_COUNT"))
+
+# Sort by crash count in descending order and limit to the top 50
+top_50_crashes = yearly_crashes.orderBy(col("CRASH_COUNT").desc()).limit(50)
+
+# Show the top 50 results
+top_50_crashes.show()
+
+# Convert the Spark DataFrame to a Pandas DataFrame
+top_50_crashes_pd = top_50_crashes.toPandas()
+
+# Plot the top 50 results
 import matplotlib.pyplot as plt
 
-# Validate input arguments
-if len(sys.argv) < 2:
-    print("Error: No file path provided. Please specify a CSV file.")
-    sys.exit(1)
+plt.figure(figsize=(12, 6))  # Adjust figure size if necessary
+bar_width = 0.8  # Adjust this value as needed (default is 0.8)
+plt.bar(top_50_crashes_pd['VEHICLE_TYPE'], top_50_crashes_pd['CRASH_COUNT'], bar_width, color='blue')
+plt.xlabel('VEHICLE_TYPE')
+plt.ylabel('Number of Crashes')
+plt.title('Top 50 Vehicle Types with the Most Crashes')
+plt.xticks(rotation=90)
+plt.tight_layout()
 
-file_path = sys.argv[1]
+plt.savefig("vehicle_type_bar_chart.png")
+# Show the plot and allow interaction
+plt.show(block=False)
 
-try:
-    # Initialize Spark session
-    spark = SparkSession.builder.getOrCreate()
-
-    # Measure execution time
-    start_time = time.time()
-
-    # Read the CSV file
-    df = spark.read.csv(file_path, header=True, inferSchema=True)
-
-    # Group by VEHICLE_TYPE and count occurrences
-    vehicle_type_summary = df.groupBy("VEHICLE_TYPE").agg(
-        count("COLLISION_ID").alias("Crash_Count")
-    )
-
-    # Sort by Crash_Count in descending order
-    vehicle_type_summary = vehicle_type_summary.orderBy(col("Crash_Count").desc())
-
-    # Collect results as a list
-    results = vehicle_type_summary.collect()
-    top_50_results = results[:50]
-    Types = [row['VEHICLE_TYPE'] for row in top_50_results]
-    crash_counts = [row['Crash_Count'] for row in top_50_results]
-    # Format results for output
-    result_str = "\n".join(
-        [f"Type: {row['VEHICLE_TYPE']}, Crashes: {row['Crash_Count']}" for row in results]
-    )
-
-    # Create the bar plot
-    plt.figure(figsize=(10, 6))  # Increase the width and height
-    plt.bar(Types, crash_counts, color='blue', width=0.8)
-    plt.xlabel('Vehicle Type')
-    plt.ylabel('Crash Count')
-    plt.title('Crash Count by Vehicle Type')
-    plt.xticks(rotation=90, ha='right')
-    plt.tight_layout()
-
-    # Save the plot as an image
-    plt.savefig("vehicle_type_bar_chart.png")  # Save to the current working directory
-    #plt.show()
-    plt.close()  # Close the figure to prevent it from popping up
-
-    # Print results for GUI capture
-    print("Vehicle Type Analysis Results:")
-    print(result_str)
-
-    # Measure and print execution time
-    end_time = time.time()
-    execution_time = end_time - start_time
-    print(f"\nExecution Time: {execution_time:.2f} seconds")
-
-except Exception as e:
-    print(f"Error: {e}")
-    sys.exit(1)
-
-finally:
-    spark.stop()
+# Keep the plot window open
+plt.show(block=True)

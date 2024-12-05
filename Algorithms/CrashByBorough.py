@@ -1,12 +1,15 @@
 from pyspark.sql import SparkSession, functions as F
 import matplotlib.pyplot as plt
 
-# Create Spark session
-spark = SparkSession.builder.appName("CrashAnalysis").getOrCreate()
+spark = SparkSession.builder \
+    .appName("MongoDB CarCrash Analysis") \
+    .config("spark.mongodb.input.uri", "mongodb://localhost:27017/CarCrash.Crashes2") \
+    .config("spark.mongodb.output.uri", "mongodb://localhost:27017/CarCrash.Crashes2") \
+    .config('spark.jars.packages', 'org.mongodb.spark:mongo-spark-connector_2.12:2.4.2') \
+    .getOrCreate()
 
-# Load CSV file into DataFrame
-file_path = "Motor_Vehicle_Collisions_-_Full.csv"  # Ensure the file path is correct
-df = spark.read.option("header", "true").csv(file_path)
+# Read data from MongoDB into a Spark DataFrame
+df = spark.read.format("mongo").load()
 
 # Group by BOROUGH and count the number of crashes
 borough_crashes = df.groupBy("BOROUGH").agg(F.count("*").alias("CRASH_COUNT"))
@@ -32,13 +35,8 @@ plt.tight_layout()
 
 # Save the plot as an image file
 plt.savefig("borough_crash_count.png")  # Save the figure to a file
-plt.close()  # Close the plot to free up memory
 
-# Optionally display the plot as well (uncomment the next line if you want to see the plot when running the script)
 plt.show()
 
 # Print DataFrame for verification in console (optional, for debugging)
 borough_crashes.show(truncate=False)
-
-# Stop the Spark session
-spark.stop()

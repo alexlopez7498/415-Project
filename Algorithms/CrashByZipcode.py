@@ -1,12 +1,15 @@
 from pyspark.sql import SparkSession, functions as F
 import matplotlib.pyplot as plt
 
-# Create Spark session
-spark = SparkSession.builder.appName("CrashAnalysis").getOrCreate()
+spark = SparkSession.builder \
+    .appName("MongoDB CarCrash Analysis") \
+    .config("spark.mongodb.input.uri", "mongodb://localhost:27017/CarCrash.Crashes2") \
+    .config("spark.mongodb.output.uri", "mongodb://localhost:27017/CarCrash.Crashes2") \
+    .config('spark.jars.packages', 'org.mongodb.spark:mongo-spark-connector_2.12:2.4.2') \
+    .getOrCreate()
 
-# Load CSV file into DataFrame
-file_path = "Motor_Vehicle_Collisions_-_Full.csv"
-df = spark.read.option("header", "true").csv(file_path)
+# Read data from MongoDB into a Spark DataFrame
+df = spark.read.format("mongo").load()
 
 # Clean the ZIP CODE column by trimming and converting to uppercase
 df = df.withColumn("ZIP CODE", F.upper(F.trim(F.col("ZIP CODE"))))
@@ -48,12 +51,8 @@ plt.tight_layout()
 # Save the plot as a PNG file
 plt.savefig("zipcode_crash_count.png")
 
-#plt.show()
+plt.show()
 
-plt.close()
 
 # Display DataFrame results in console
 zipcode_crashes.show(truncate=False)
-
-# Stop the Spark session to free resources
-spark

@@ -1,6 +1,6 @@
 import sys
 import pandas as pd
-from pyspark.sql import SparkSession
+from pymongo import MongoClient
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import TruncatedSVD
 from sklearn.model_selection import train_test_split
@@ -9,41 +9,32 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# # Validate input arguments
-# if len(sys.argv) < 2:
-#     print("Error: No file path provided. Please specify a CSV file.")
-#     sys.exit(1)
-#
-# # Initialize Spark session
-# spark = SparkSession.builder.getOrCreate()
-#
-# file_path = sys.argv[1]
-# df = spark.read.csv(file_path, header=True, inferSchema=True)
-# Load data
-df = pd.read_csv("../Motor_Vehicle_Collisions_-_Full.csv")
+client = MongoClient('mongodb://localhost:27017/')
+db = client['CarCrash']  
+collection = db['Crashes2']  
 
-# Filter to keep only rows where 'PERSON_INJURY' is not null
-df = df[df['PERSON_INJURY'].notna()]
+# Fetch data from MongoDB
+data = list(collection.find())  # convert cursor to a list
+
+# Convert to pandas DataFrame
+df = pd.DataFrame(data)
+
+# Drop any irrelevant columns (adjust to match the columns in your MongoDB data)
+df = df.drop(['LATITUDE', 'LONGITUDE', 'COLLISION_ID', 'VEHICLE_YEAR', 'CRASH DATE', 'CRASH TIME',
+              'ZIP CODE', 'LOCATION', 'PERSON_ID', 'DRIVER_LICENSE_JURISDICTION', 'PED_LOCATION',
+              'PED_ACTION', 'COMPLAINT', 'PED_ROLE', 'PERSON_SEX', 'VEHICLE_DAMAGE',
+              'VEHICLE_DAMAGE_1', 'VEHICLE_DAMAGE_2', 'VEHICLE_DAMAGE_3', 'TRAVEL_DIRECTION',
+              'PUBLIC_PROPERTY_DAMAGE'], axis=1)
 
 # Replace 'Unspecified' and 'Injured' with 0, and 'Killed' with 1 in 'PERSON_INJURY'
 df['PERSON_INJURY'] = df['PERSON_INJURY'].replace({'Unspecified': 0, 'Injured': 0, 'Killed': 1})
 
-# Drop irrelevant columns for vectorization and PCA
-df = df.drop(['LATITUDE', 'LONGITUDE', 'COLLISION_ID', 'VEHICLE_YEAR', 'CRASH DATE', 'CRASH TIME',
-                'ZIP CODE', 'LOCATION', 'PERSON_ID', 'DRIVER_LICENSE_JURISDICTION', 'PED_LOCATION',
-                'PED_ACTION', 'COMPLAINT', 'PED_ROLE', 'PERSON_SEX', 'VEHICLE_DAMAGE',
-                'VEHICLE_DAMAGE_1','VEHICLE_DAMAGE_2', 'VEHICLE_DAMAGE_3', 'TRAVEL_DIRECTION',
-                'PUBLIC_PROPERTY_DAMAGE'], axis=1)
+# Handle missing data, drop rows, etc.
+df = df[df['PERSON_INJURY'].notna()]
 
-# Generating df for testing where preportion of killed to not killed is closer to 5050
-
-# Filter all rows where 'PERSON_INJURY' is 1
+# Generating df for testing where the proportion of killed to not killed is closer to 50-50
 injury_df = df[df['PERSON_INJURY'] == 1]
-
-# Randomly sample 4000 rows where 'PERSON_INJURY' is 0
 no_injury_sample_df = df[df['PERSON_INJURY'] == 0].sample(n=4000, random_state=42)
-
-# Concatenate the two DataFrames
 df_t = pd.concat([injury_df, no_injury_sample_df])
 
 # Shuffle the rows in case the order matters
@@ -111,4 +102,3 @@ plt.title("Confusion Matrix")
 plt.savefig("confusion_matrix.png")  # Save the figure
 #plt.show()
 plt.close()  # Close the figure to free resources
-

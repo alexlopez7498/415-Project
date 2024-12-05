@@ -196,7 +196,7 @@ root.title("NYC Car Crash Analysis")
 
 # Create layout
 frame = tk.Frame(root)
-frame.pack(padx=20, pady=20)
+frame.pack(padx=100, pady=100)
 
 # Dropdown menu for selecting the algorithm
 algorithm_label = tk.Label(frame, text="Select Analysis Algorithm:")

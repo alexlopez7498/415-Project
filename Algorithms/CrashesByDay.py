@@ -1,16 +1,16 @@
 from pyspark.sql import SparkSession, functions as F
 import matplotlib.pyplot as plt
 
-# Create Spark session
 spark = SparkSession.builder \
-    .appName("CrashAnalysis") \
+    .appName("MongoDB CarCrash Analysis") \
+    .config("spark.mongodb.input.uri", "mongodb://localhost:27017/CarCrash.Crashes2") \
+    .config("spark.mongodb.output.uri", "mongodb://localhost:27017/CarCrash.Crashes2") \
+    .config('spark.jars.packages', 'org.mongodb.spark:mongo-spark-connector_2.12:2.4.2') \
     .config("spark.sql.legacy.timeParserPolicy", "LEGACY") \
     .getOrCreate()
 
-
-# Load CSV file into DataFrame
-file_path = "Motor_Vehicle_Collisions_-_Full.csv"
-df = spark.read.option("header", "true").csv(file_path)
+# Read data from MongoDB into a Spark DataFrame
+df = spark.read.format("mongo").load()
 
 # Convert CRASH DATE to proper date format and extract the day of the week
 df = df.withColumn(
