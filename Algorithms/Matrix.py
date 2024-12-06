@@ -100,5 +100,5 @@ plt.xlabel("Predicted Label")
 plt.ylabel("True Label")
 plt.title("Confusion Matrix")
 plt.savefig("confusion_matrix.png")  # Save the figure
-#plt.show()
+plt.show()
 plt.close()  # Close the figure to free resources

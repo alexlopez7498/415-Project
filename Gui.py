@@ -3,7 +3,6 @@ from tkinter import messagebox, filedialog
 import subprocess
 from PIL import Image, ImageTk
 import os
-
 # Function to run the selected analysis
 def run_analysis():
     selected_algorithm = algorithm_var.get()
@@ -72,11 +71,6 @@ def clear_displayed_images():
             delattr(run_external_script, image_label_attr)
 
 def run_external_script(script_name, analysis_name):
-    import os
-    import subprocess
-    import tkinter as tk
-    from tkinter import messagebox
-    from PIL import Image, ImageTk
 
     # File path is always "Motor_Vehicle_Collisions_-_Full.csv"
     # Get the directory of the current script

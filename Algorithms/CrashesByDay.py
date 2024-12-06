@@ -84,7 +84,7 @@ plt.xticks(rotation=45)
 plt.ylim(0, 300000)
 plt.tight_layout()
 
-#plt.show()
+plt.show()
 
 # Display results in Spark
 daily_crashes.show(truncate=False)
